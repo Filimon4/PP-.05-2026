@@ -251,18 +251,20 @@ insert into bill_of_material (product_id, material_id, quantity) values
 
 start transaction;
 
-INSERT INTO orders (datetime, customer_id, status_id, manager_id) VALUES
-(
-	NOW(),
-	(select id from customers c where c.name = 'ООО "Ассоль"'),
-	(select id from order_statuses os where os.code = 'pending'),
-	(select e.id from employees e inner join employee_positions ep on e.position_id = ep.id where ep.code = 'SALES_MGR' limit 1)
-);
-
+WITH new_order AS (
+    INSERT INTO orders (date, customer_id, status_id, manager_id) VALUES
+    (
+        NOW(),
+        (select id from customers c where c.name = 'ООО "Ассоль"'),
+        (select id from order_statuses os where os.code = 'pending'),
+        (select e.id from employees e inner join employee_positions ep on e.position_id = ep.id where ep.code = 'SALES_MGR' limit 1)
+    )
+    RETURNING id
+)
 INSERT INTO order_items (order_id, product_id, quantity, price_at_sale) VALUES
-(3, (select p.id from products p where p.code = 'Kefir_1'), 12, 80.00),
-(3, (select p.id from products p where p.code = 'Kefir_2'), 9, 82.00),
-(3, (select p.id from products p where p.code = 'Milk_1'), 10, 79.00);
+((SELECT id FROM new_order), (select p.id from products p where p.code = 'Kefir_1'), 12, 80.00),
+((SELECT id FROM new_order), (select p.id from products p where p.code = 'Kefir_2'), 9, 82.00),
+((SELECT id FROM new_order), (select p.id from products p where p.code = 'Milk_1'), 10, 79.00);
 
 end transaction;
 
@@ -274,7 +276,7 @@ select
 	oi.price_at_sale,
 	oi.price_at_sale * oi.quantity as total, -- конечна цена
 	bom2.quantity * m."cost" * oi.quantity as cost_price, -- себестоимость
-	(oi.price_at_sale * oi.quantity) - (bom2.quantity * m."cost" * oi.quantity) as net_income -- чистая прибыль
+	(oi.price_at_sale * oi.quantity) - (bom2.quantity * m."cost" * oi.quantity) as net_income -- чистая прибыль 
 from orders o
 inner join order_items oi on oi.order_id = o.id
 inner join products p on product_id = p.id
