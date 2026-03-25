@@ -200,7 +200,11 @@
        </layout>
       </item>
       <item>
-       <widget class="QListView" name="bill_of_material_list"/>
+       <widget class="QListView" name="bill_of_material_list">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>
