@@ -70,8 +70,8 @@ class OrdersAddDialog(QDialog):
     def getData(self):
         date_value = self.ui.order_date.dateTime().toPython() if hasattr(self.ui.order_date, 'dateTime') else self.ui.order_date.dateTime()
         return {
-            'customer_name': self.ui.order_customer_combo.currentText().strip(),
-            'status_code': self.ui.order_status_combo.currentText(),
+            'customer_name': self.ui.order_customer_combo.currentText(),
+            'status_title': self.ui.order_status_combo.currentText(),
             'manager_code': self.ui.order_manager_combo.currentText(),
             'order_date': date_value
         }
@@ -126,8 +126,6 @@ class OrdersChangeDialog(OrdersAddDialog):
 
         self.orderItemsLoad()
         
-        print(self.order)
-
         if self.order['status_code'] == 'active':
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute("""
@@ -156,6 +154,8 @@ class OrdersChangeDialog(OrdersAddDialog):
                 if total_batch_quantity >= item['quantity']:
                     closed_ids.append(item['id'])
 
+            print(closed_ids)
+            print(self.orderItems)
             if len(closed_ids) == len(self.orderItems) and len(self.orderItems) > 0:
                 close_button = QPushButton("Закрыть")
                 self.ui.order_actions.addWidget(close_button)
@@ -1273,7 +1273,7 @@ class MainWindow(QMainWindow):
                 left join order_statuses os on os.id = o.status_id
                 left join customers c on o.customer_id = c.id
                 left join employees e on o.manager_id = e.id
-                order by id asc 
+                
             """
             
             params = {}
@@ -1283,6 +1283,8 @@ class MainWindow(QMainWindow):
             elif currentFilter == "Закрытые":
                 query += " WHERE os.code = 'closed'"
             
+            query += 'order by id asc '
+
             cur.execute(query, params)
             orders = cur.fetchall() 
 
@@ -1302,8 +1304,6 @@ class MainWindow(QMainWindow):
         if index >= 0:
             dialog.ui.order_status_combo.setCurrentIndex(index)
 
-        
-
         if dialog.exec() == QDialog.DialogCode.Accepted:
             data = dialog.getData()
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
@@ -1311,8 +1311,8 @@ class MainWindow(QMainWindow):
                     cur.execute("""
                         SELECT c.id
                         FROM customers c
-                        WHERE c.name = %(customer_name)s
-                    """, {"customer_name": data['customer_name']})
+                        WHERE c."name" = %(name)s
+                    """, {"name": data['customer_name']})
                                         
                     customerData = cur.fetchone()
                     if customerData is None:
@@ -1322,12 +1322,11 @@ class MainWindow(QMainWindow):
                         select
                             os.id
                         from order_statuses os
-                        where os.code = %(code)s
-                    """, {"code": data['status_code']})
-                    
+                        where os.title = %(code)s
+                    """, {"code": data['status_title']})
                     statusData = cur.fetchone()
                     if statusData is None:
-                        raise Exception(f"Заказчик '{data['customer_name']}' не найден")
+                        raise Exception(f"Статус '{data['status_title']}' не найден")
 
                     cur.execute("""
                         select
@@ -1339,11 +1338,11 @@ class MainWindow(QMainWindow):
 
                     managerData = cur.fetchone()
                     if managerData is None:
-                        raise Exception(f"Статус '{data['status_code']}' не найден")
+                        raise Exception(f"Менеджер '{data['status_title']}' не найден")
 
                     cur.execute("""
-                        INSERT INTO orders (date, customer_id, status_id manager_id)
-                        VALUES (%(date)s, %(customer_id)s, %(status_id)s %(manager_id)s)
+                        INSERT INTO orders (date, customer_id, status_id, manager_id)
+                        VALUES (%(date)s, %(customer_id)s, %(status_id)s, %(manager_id)s)
                         RETURNING id
                     """, {
                         'date': data['order_date'],
@@ -1436,6 +1435,8 @@ class MainWindow(QMainWindow):
                 SELECT o.id, o.date, c.name as customer_name
                 FROM orders o
                 LEFT JOIN customers c ON c.id = o.customer_id
+                left join order_statuses os on o.status_id = os.id
+                where os.code = 'active'
                 ORDER BY o.id DESC
             """)
             return cur.fetchall()
