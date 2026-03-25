@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>988</width>
-    <height>581</height>
+    <width>1031</width>
+    <height>602</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -99,19 +99,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="bill_of_material_but">
-        <property name="text">
-         <string>Спецификация</string>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="autoExclusive">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
        <spacer name="verticalSpacer">
         <property name="orientation">
          <enum>Qt::Orientation::Vertical</enum>
@@ -142,6 +129,9 @@
        </sizepolicy>
       </property>
       <layout class="QGridLayout" name="gridLayout">
+       <property name="sizeConstraint">
+        <enum>QLayout::SizeConstraint::SetNoConstraint</enum>
+       </property>
        <item row="0" column="0">
         <widget class="QStackedWidget" name="stackedWidget">
          <property name="sizePolicy">
@@ -151,7 +141,7 @@
           </sizepolicy>
          </property>
          <property name="currentIndex">
-          <number>3</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="orders">
           <property name="sizePolicy">
@@ -160,87 +150,245 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
-          <widget class="QListView" name="ordersList">
-           <property name="geometry">
-            <rect>
-             <x>60</x>
-             <y>60</y>
-             <width>731</width>
-             <height>421</height>
-            </rect>
-           </property>
-          </widget>
-          <widget class="QPushButton" name="orders_get_all">
-           <property name="geometry">
-            <rect>
-             <x>710</x>
-             <y>10</y>
-             <width>80</width>
-             <height>24</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>get all</string>
-           </property>
-          </widget>
-          <widget class="QPushButton" name="orders_add_new">
-           <property name="geometry">
-            <rect>
-             <x>620</x>
-             <y>10</y>
-             <width>80</width>
-             <height>24</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>add new</string>
-           </property>
-          </widget>
-         </widget>
-         <widget class="QWidget" name="product_batches">
-          <widget class="QLabel" name="label_4">
-           <property name="geometry">
-            <rect>
-             <x>350</x>
-             <y>230</y>
-             <width>141</width>
-             <height>41</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>product_batchers</string>
-           </property>
-          </widget>
-         </widget>
-         <widget class="QWidget" name="customers">
-          <widget class="QLabel" name="label_6">
-           <property name="geometry">
-            <rect>
-             <x>420</x>
-             <y>260</y>
-             <width>121</width>
-             <height>31</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>customers</string>
-           </property>
-          </widget>
-         </widget>
-         <widget class="QWidget" name="materials">
           <widget class="QWidget" name="">
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>10</y>
-             <width>841</width>
-             <height>511</height>
+             <y>-3</y>
+             <width>901</width>
+             <height>541</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_5">
+            <item>
+             <widget class="QLabel" name="label_3">
+              <property name="text">
+               <string>Заказы</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_6">
+              <item>
+               <widget class="QPushButton" name="order_add">
+                <property name="text">
+                 <string>Добавить</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="order_change">
+                <property name="text">
+                 <string>Изменить</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_5">
+                <property name="orientation">
+                 <enum>Qt::Orientation::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QPushButton" name="order_load">
+                <property name="text">
+                 <string>Загрузить</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QComboBox" name="order_load_filter_combo">
+                <item>
+                 <property name="text">
+                  <string>Все</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Активные заказы</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Закрытые</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QListView" name="order_list"/>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+         <widget class="QWidget" name="product_batches">
+          <widget class="QWidget" name="">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>891</width>
+             <height>541</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_3">
+            <item>
+             <widget class="QLabel" name="label_4">
+              <property name="text">
+               <string>Поступления</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_4">
+              <item>
+               <widget class="QPushButton" name="product_batches_add">
+                <property name="text">
+                 <string>Добавить</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="product_batches_delete">
+                <property name="text">
+                 <string>Удалить</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="product_batches_change">
+                <property name="text">
+                 <string>Изменить</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_3">
+                <property name="orientation">
+                 <enum>Qt::Orientation::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QPushButton" name="product_batches_load">
+                <property name="text">
+                 <string>Загрузить</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QListView" name="product_batches_list"/>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+         <widget class="QWidget" name="customers">
+          <widget class="QWidget" name="">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>891</width>
+             <height>541</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_2">
+            <item>
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>Покупатели</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_3">
+              <item>
+               <widget class="QPushButton" name="customer_add">
+                <property name="text">
+                 <string>Добавить</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="customer_delete">
+                <property name="text">
+                 <string>Удалить</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="customer_change">
+                <property name="text">
+                 <string>Изменить</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_2">
+                <property name="orientation">
+                 <enum>Qt::Orientation::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QPushButton" name="customer_load">
+                <property name="text">
+                 <string>Загрузить</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QListView" name="customer_list"/>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+         <widget class="QWidget" name="materials">
+          <widget class="QWidget" name="layoutWidget">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>891</width>
+             <height>541</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="materials_layout">
             <property name="sizeConstraint">
              <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
             </property>
+            <item>
+             <widget class="QLabel" name="label_2">
+              <property name="text">
+               <string>Материалы</string>
+              </property>
+             </widget>
+            </item>
             <item>
              <layout class="QHBoxLayout" name="material_buttons">
               <item>
@@ -293,48 +441,146 @@
           </widget>
          </widget>
          <widget class="QWidget" name="bill_of_material">
-          <widget class="QLabel" name="label_7">
-           <property name="geometry">
-            <rect>
-             <x>360</x>
-             <y>230</y>
-             <width>151</width>
-             <height>41</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>bill_of_material</string>
-           </property>
-          </widget>
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
          </widget>
          <widget class="QWidget" name="employee">
-          <widget class="QLabel" name="label_2">
+          <widget class="QWidget" name="">
            <property name="geometry">
             <rect>
-             <x>380</x>
-             <y>240</y>
-             <width>111</width>
-             <height>16</height>
+             <x>0</x>
+             <y>5</y>
+             <width>891</width>
+             <height>531</height>
             </rect>
            </property>
-           <property name="text">
-            <string>employee</string>
-           </property>
+           <layout class="QVBoxLayout" name="verticalLayout">
+            <item>
+             <widget class="QLabel" name="title">
+              <property name="text">
+               <string>Сотрудники</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_2">
+              <item>
+               <widget class="QPushButton" name="employee_add">
+                <property name="text">
+                 <string>Добавить</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="employee_delete">
+                <property name="text">
+                 <string>Удалить</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="employee_change">
+                <property name="text">
+                 <string>Изменить</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer">
+                <property name="orientation">
+                 <enum>Qt::Orientation::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QPushButton" name="employee_load">
+                <property name="text">
+                 <string>Загрузить</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QListView" name="employee_list"/>
+            </item>
+           </layout>
           </widget>
          </widget>
          <widget class="QWidget" name="products">
-          <widget class="QLabel" name="label_5">
+          <widget class="QWidget" name="">
            <property name="geometry">
             <rect>
-             <x>390</x>
-             <y>270</y>
-             <width>81</width>
-             <height>31</height>
+             <x>0</x>
+             <y>0</y>
+             <width>881</width>
+             <height>541</height>
             </rect>
            </property>
-           <property name="text">
-            <string>products</string>
-           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_4">
+            <item>
+             <widget class="QLabel" name="label_5">
+              <property name="text">
+               <string>Продукты</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_5">
+              <item>
+               <widget class="QPushButton" name="product_add">
+                <property name="text">
+                 <string>Добавить</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="product_delete">
+                <property name="text">
+                 <string>Удалить</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="product_change">
+                <property name="text">
+                 <string>Изменить</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_4">
+                <property name="orientation">
+                 <enum>Qt::Orientation::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QPushButton" name="product_load">
+                <property name="text">
+                 <string>Загрузить</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QListView" name="product_list"/>
+            </item>
+           </layout>
           </widget>
          </widget>
         </widget>

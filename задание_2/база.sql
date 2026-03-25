@@ -12,7 +12,7 @@ CREATE TABLE customers (
 
 CREATE TABLE employee_positions (
     id INTEGER PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
+    title VARCHAR(255) NOT NULL UNIQUE,
     code VARCHAR(255) NOT NULL
 );
 
@@ -118,9 +118,14 @@ ALTER TABLE orders ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY;
 ALTER TABLE order_items ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY;
 ALTER TABLE products ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY;
 ALTER TABLE materials ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY;
+ALTER TABLE customers ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY;
+ALTER TABLE product_batches ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY;
+ALTER TABLE order_statuses ADD COLUMN title varchar(255);
+
 
 alter table products drop column unit_of_measure;
 ALTER TABLE products ADD COLUMN unit_of_measure_id INTEGER REFERENCES units_of_measures(id);
+ALTER TABLE products ADD COLUMN deleted BOOLEAN DEFAULT false;
 
 alter table materials drop column unit_of_measure;
 ALTER TABLE materials ADD COLUMN unit_of_measure_id INTEGER REFERENCES units_of_measures(id);
@@ -130,6 +135,7 @@ add column default_price integer check (default_price > 0) default 1;
 
 alter table bill_of_material ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY;
 alter table bill_of_material alter column quantity type float;
+ALTER TABLE bill_of_material ADD COLUMN deleted BOOLEAN DEFAULT false;
 
 alter table products alter column default_price type float;
 
@@ -146,13 +152,10 @@ INSERT INTO customers (id, name, inn, address, phone, salesman, buyer) VALUES
 ('000000010', 'ООО "Ассоль"', '2629011278', 'г. Калуга, ул. Пушкина, 94', '+79184572398', FALSE, TRUE);
 
 
-INSERT INTO order_statuses (code) VALUES
-('pending'),
-('processing'),
-('shipped'),
-('delivered'),
-('cancelled'),
-('refunded');
+INSERT INTO order_statuses (code, title) VALUES
+('cancelled', 'Отменена'),
+('active', 'Открыта'),
+('closed', 'Закрыта');
 
 INSERT INTO employee_positions (title, code) VALUES
 ('Генеральный директор', 'CEO'),
@@ -256,7 +259,7 @@ WITH new_order AS (
     (
         NOW(),
         (select id from customers c where c.name = 'ООО "Ассоль"'),
-        (select id from order_statuses os where os.code = 'pending'),
+        (select id from order_statuses os where os.code = 'active'),
         (select e.id from employees e inner join employee_positions ep on e.position_id = ep.id where ep.code = 'SALES_MGR' limit 1)
     )
     RETURNING id
