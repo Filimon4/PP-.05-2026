@@ -48,7 +48,7 @@ CREATE TABLE materials (
     id INTEGER PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     unit_of_measure VARCHAR(50),
-    cost integer unique
+    cost integer
 );
 
 create table units_of_measures (

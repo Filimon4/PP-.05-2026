@@ -1,5 +1,5 @@
 import sys
-from PySide6.QtWidgets import QApplication, QMainWindow, QDialog
+from PySide6.QtWidgets import QApplication, QMainWindow, QDialog, QMessageBox
 from PySide6.QtCore import Qt, QAbstractListModel, QModelIndex
 from ui_mainwindow import Ui_MainWindow
 from ui_material_add import Ui_material_add
@@ -33,6 +33,8 @@ class OrdersListModel(QAbstractListModel):
 
         return None
     
+# region: Material
+
 class MaterialsListModel(QAbstractListModel):
     def __init__(self, materials=[]):
         super().__init__()
@@ -50,8 +52,10 @@ class MaterialsListModel(QAbstractListModel):
         if role == Qt.DisplayRole:
             return f"{material['id']} | {material['name']} | Цена: {material['cost']} | Ед. изм: {material['unit_code']}"
         
+        if role == Qt.UserRole:
+            return material
+        
         return None
-    
 
 class MaterialAddDialog(QDialog):
     def __init__(self, parent=None):
@@ -60,16 +64,66 @@ class MaterialAddDialog(QDialog):
         self.ui.setupUi(self) 
         self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.WindowCloseButtonHint)
     
-    def get_material_data(self):
+    def getData(self):
         return {
-            'name': self.ui.materialName.text(),
-            'unit': self.ui.materialUnits.currentText()  # Or currentData() if you set data
+            'name': self.ui.materialName.text().strip(),
+            'unit': self.ui.materialUnits.currentText(),
+            'cost': self.ui.materialCost.text().strip()
         }
     
-    def set_units(self, units_list):
+    def validate(self):
+        data = self.getData()
+
+        if not data['name']:
+            return False, "Введите название материала"
+        
+        if self.ui.materialUnits.currentIndex() == -1 or not data['unit']:
+            return False, "Выберите единицы измерения"
+        
+        if not data['cost']:
+            return False, "Введите цену материала"
+
+        if not data['cost']:
+            return False, "Введите стоимость материала"
+        
+        try:
+            cost = int(data['cost'])
+            if cost <= 0:
+                return False, "Стоимость должна быть положительным числом"
+            data['cost'] = cost
+        except ValueError:
+            return False, "Стоимость должна быть целым числом"
+        
+        return True, ""
+    
+    def setUnits(self, units_list):
         """Set available units in the combo box"""
         self.ui.materialUnits.clear()
         self.ui.materialUnits.addItems(units_list)
+
+    def accept(self):
+        is_valid, error_msg = self.validate()
+        
+        if not is_valid:
+            QMessageBox.warning(self, "Ошибка", error_msg)
+            return
+        
+        super().accept()
+
+class MaterialChangeDialog(MaterialAddDialog):
+    def __init__(self, parent=None, material=object):
+        super().__init__(parent)
+        self.material = material
+
+    def setDefault(self):
+        self.ui.materialName.setText(self.material['name'])
+        self.ui.materialCost.setText(str(round(self.material['cost'])))
+
+        index = self.ui.materialUnits.findText(self.material['unit_code'])
+        if index >= 0:
+            self.ui.materialUnits.setCurrentIndex(index)
+
+# endregion 
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -100,8 +154,7 @@ class MainWindow(QMainWindow):
         self.ui.material_delete.clicked.connect(self.materialDelete)
 
 
-    # menu clicked
-
+    # region menu
     def billOfMaterialClicked(self):
         self.ui.stackedWidget.setCurrentIndex(4)
     
@@ -122,6 +175,7 @@ class MainWindow(QMainWindow):
 
     def productsButClicked(self):
         self.ui.stackedWidget.setCurrentIndex(6)
+    # endregion
 
     # orders
 
@@ -151,7 +205,7 @@ class MainWindow(QMainWindow):
     def ordersAddNew(self):
         pass
 
-    # material
+    # region material
 
     def materialLoad(self):
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
@@ -172,24 +226,107 @@ class MainWindow(QMainWindow):
     def materialAdd(self):
         dialog = MaterialAddDialog()
         units = self.getUnitOfMeasure()
-        dialog.set_units(list(map(lambda u: u['code'], list(units))))
+        dialog.setUnits(list(map(lambda u: u['code'], list(units))))
         if dialog.exec() == QDialog.DialogCode.Accepted:
-            # Dialog was accepted (OK button clicked)
-            data = dialog.get_material_data()
-            print(f"Added material: {data['name']} ({data['unit']})")
-        
+            data = dialog.getData()
+            cur = conn.cursor()
+            try:
+                cur.execute("""
+                    SELECT
+                        m.id
+                    FROM units_of_measures m
+                    WHERE m.code = %(code)s
+                """, {"code": data['unit']})
+                
+                unitData = cur.fetchone()
+                if unitData is None:
+                    raise Exception(f"Unit of measure with code '{data['unit']}' not found")
+                cur.execute("""
+                    INSERT INTO materials (name, cost, unit_of_measure_id)
+                    VALUES (%(name)s, %(cost)s, %(unit_id)s)
+                """, {
+                    "name": data['name'], 
+                    "cost": data['cost'], 
+                    "unit_id": unitData[0]
+                })
+                conn.commit()
+                print("Material added successfully")
+            except Exception as e:
+                conn.rollback()
+                print(f"Error occurred: {e}")
+            finally:
+                cur.close()
+                self.materialLoad()
 
     def materialChange(self):
+        if not self.ui.material_list.selectionModel(): 
+            QMessageBox.warning(self, "Ошибка", "Выберете элемент")
+            return
+        
         selected = self.ui.material_list.selectionModel().selectedIndexes()
         
-        if not selected: return
+        if not selected: 
+            QMessageBox.warning(self, "Ошибка", "Выберете элемент")
+            return
+        
+        selected_index = selected[0]
+        item = self.ui.material_list.model().data(selected_index, Qt.UserRole)
+
+        dialog = MaterialChangeDialog(None, item)
+        units = self.getUnitOfMeasure()
+        dialog.setUnits(list(map(lambda u: u['code'], list(units))))
+        dialog.setDefault()
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            data = dialog.getData()
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT
+                        m.id
+                    FROM units_of_measures m
+                    WHERE m.code = %(code)s
+                """, {"code": data['unit']})
+                unitData = cur.fetchone()
+                if unitData is None:
+                    raise Exception(f"Unit of measure with code '{data['unit']}' not found")
+                cur.execute("""
+                    update materials
+                    set name = %(name)s, cost = %(cost)s, unit_of_measure_id = %(unit_id)s
+                    where id = %(id)s
+                    returning id
+                """, {'id': item['id'], 'name': data['name'], 'unit_id': unitData['id'], 'cost': data['cost']})
+                cur.fetchone()
+                conn.commit()
+            self.materialLoad()
 
     def materialDelete(self):
+        if not self.ui.material_list.selectionModel():
+            QMessageBox.warning(self, "Ошибка", "Выберете элемент")
+            return
+
         selected = self.ui.material_list.selectionModel().selectedIndexes()
         
-        if not selected: return
+        if not selected:
+            QMessageBox.warning(self, "Ошибка", "Выберете элемент")
+            return
+        
+        selected_index = selected[0]
+        item = self.ui.material_list.model().data(selected_index, Qt.UserRole)
+        
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                DELETE FROM materials
+                WHERE id = %s
+                RETURNING *
+            """, (item['id'],))
+            
+            cur.fetchone()
+            conn.commit()
+        
+        self.materialLoad()
 
-    # unit_of_measure
+    # endregion
+
+    # region unit_of_measure
 
     def getUnitOfMeasure(self):
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
@@ -202,6 +339,8 @@ class MainWindow(QMainWindow):
             unitsOfMeasure = cur.fetchall()
 
         return unitsOfMeasure
+
+    # endregion
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
