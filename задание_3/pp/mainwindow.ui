@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>988</width>
-    <height>580</height>
+    <height>581</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -135,24 +135,65 @@
     </item>
     <item>
      <widget class="QWidget" name="menu" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <layout class="QGridLayout" name="gridLayout">
        <item row="0" column="0">
         <widget class="QStackedWidget" name="stackedWidget">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="currentIndex">
-          <number>4</number>
+          <number>3</number>
          </property>
          <widget class="QWidget" name="orders">
-          <widget class="QLabel" name="label">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <widget class="QListView" name="ordersList">
            <property name="geometry">
             <rect>
-             <x>338</x>
-             <y>250</y>
-             <width>111</width>
-             <height>21</height>
+             <x>60</x>
+             <y>60</y>
+             <width>731</width>
+             <height>421</height>
+            </rect>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="orders_get_all">
+           <property name="geometry">
+            <rect>
+             <x>710</x>
+             <y>10</y>
+             <width>80</width>
+             <height>24</height>
             </rect>
            </property>
            <property name="text">
-            <string>orders</string>
+            <string>get all</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="orders_add_new">
+           <property name="geometry">
+            <rect>
+             <x>620</x>
+             <y>10</y>
+             <width>80</width>
+             <height>24</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>add new</string>
            </property>
           </widget>
          </widget>
@@ -187,18 +228,68 @@
           </widget>
          </widget>
          <widget class="QWidget" name="materials">
-          <widget class="QLabel" name="label_3">
+          <widget class="QWidget" name="">
            <property name="geometry">
             <rect>
-             <x>400</x>
-             <y>240</y>
-             <width>151</width>
-             <height>31</height>
+             <x>0</x>
+             <y>10</y>
+             <width>841</width>
+             <height>511</height>
             </rect>
            </property>
-           <property name="text">
-            <string>maeterials</string>
-           </property>
+           <layout class="QVBoxLayout" name="materials_layout">
+            <property name="sizeConstraint">
+             <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
+            </property>
+            <item>
+             <layout class="QHBoxLayout" name="material_buttons">
+              <item>
+               <widget class="QPushButton" name="material_add">
+                <property name="text">
+                 <string>Добавить</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="material_delete">
+                <property name="text">
+                 <string>Удалить</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="material_change">
+                <property name="text">
+                 <string>Изменить</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontal_spacer">
+                <property name="orientation">
+                 <enum>Qt::Orientation::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QPushButton" name="material_load">
+                <property name="text">
+                 <string>Загрузить</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QListView" name="material_list"/>
+            </item>
+           </layout>
           </widget>
          </widget>
          <widget class="QWidget" name="bill_of_material">

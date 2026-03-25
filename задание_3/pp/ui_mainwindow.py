@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'mainwindow.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.10.2
+## Created by: Qt User Interface Compiler version 6.11.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -16,14 +16,15 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QGridLayout, QHBoxLayout, QLabel,
-    QMainWindow, QPushButton, QSizePolicy, QSpacerItem,
-    QStackedWidget, QStatusBar, QVBoxLayout, QWidget)
+    QLayout, QListView, QMainWindow, QPushButton,
+    QSizePolicy, QSpacerItem, QStackedWidget, QStatusBar,
+    QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(988, 580)
+        MainWindow.resize(988, 581)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.horizontalLayout = QHBoxLayout(self.centralwidget)
@@ -94,15 +95,30 @@ class Ui_MainWindow(object):
 
         self.menu = QWidget(self.centralwidget)
         self.menu.setObjectName(u"menu")
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.menu.sizePolicy().hasHeightForWidth())
+        self.menu.setSizePolicy(sizePolicy)
         self.gridLayout = QGridLayout(self.menu)
         self.gridLayout.setObjectName(u"gridLayout")
         self.stackedWidget = QStackedWidget(self.menu)
         self.stackedWidget.setObjectName(u"stackedWidget")
+        sizePolicy.setHeightForWidth(self.stackedWidget.sizePolicy().hasHeightForWidth())
+        self.stackedWidget.setSizePolicy(sizePolicy)
         self.orders = QWidget()
         self.orders.setObjectName(u"orders")
-        self.label = QLabel(self.orders)
-        self.label.setObjectName(u"label")
-        self.label.setGeometry(QRect(338, 250, 111, 21))
+        sizePolicy.setHeightForWidth(self.orders.sizePolicy().hasHeightForWidth())
+        self.orders.setSizePolicy(sizePolicy)
+        self.ordersList = QListView(self.orders)
+        self.ordersList.setObjectName(u"ordersList")
+        self.ordersList.setGeometry(QRect(60, 60, 731, 421))
+        self.orders_get_all = QPushButton(self.orders)
+        self.orders_get_all.setObjectName(u"orders_get_all")
+        self.orders_get_all.setGeometry(QRect(710, 10, 80, 24))
+        self.orders_add_new = QPushButton(self.orders)
+        self.orders_add_new.setObjectName(u"orders_add_new")
+        self.orders_add_new.setGeometry(QRect(620, 10, 80, 24))
         self.stackedWidget.addWidget(self.orders)
         self.product_batches = QWidget()
         self.product_batches.setObjectName(u"product_batches")
@@ -118,9 +134,47 @@ class Ui_MainWindow(object):
         self.stackedWidget.addWidget(self.customers)
         self.materials = QWidget()
         self.materials.setObjectName(u"materials")
-        self.label_3 = QLabel(self.materials)
-        self.label_3.setObjectName(u"label_3")
-        self.label_3.setGeometry(QRect(400, 240, 151, 31))
+        self.widget = QWidget(self.materials)
+        self.widget.setObjectName(u"widget")
+        self.widget.setGeometry(QRect(0, 10, 841, 511))
+        self.materials_layout = QVBoxLayout(self.widget)
+        self.materials_layout.setObjectName(u"materials_layout")
+        self.materials_layout.setSizeConstraint(QLayout.SizeConstraint.SetDefaultConstraint)
+        self.materials_layout.setContentsMargins(0, 0, 0, 0)
+        self.material_buttons = QHBoxLayout()
+        self.material_buttons.setObjectName(u"material_buttons")
+        self.material_add = QPushButton(self.widget)
+        self.material_add.setObjectName(u"material_add")
+
+        self.material_buttons.addWidget(self.material_add)
+
+        self.material_delete = QPushButton(self.widget)
+        self.material_delete.setObjectName(u"material_delete")
+
+        self.material_buttons.addWidget(self.material_delete)
+
+        self.material_change = QPushButton(self.widget)
+        self.material_change.setObjectName(u"material_change")
+
+        self.material_buttons.addWidget(self.material_change)
+
+        self.horizontal_spacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.material_buttons.addItem(self.horizontal_spacer)
+
+        self.material_load = QPushButton(self.widget)
+        self.material_load.setObjectName(u"material_load")
+
+        self.material_buttons.addWidget(self.material_load)
+
+
+        self.materials_layout.addLayout(self.material_buttons)
+
+        self.material_list = QListView(self.widget)
+        self.material_list.setObjectName(u"material_list")
+
+        self.materials_layout.addWidget(self.material_list)
+
         self.stackedWidget.addWidget(self.materials)
         self.bill_of_material = QWidget()
         self.bill_of_material.setObjectName(u"bill_of_material")
@@ -154,7 +208,7 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         self.pushButton.clicked.connect(MainWindow.close)
 
-        self.stackedWidget.setCurrentIndex(4)
+        self.stackedWidget.setCurrentIndex(3)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -170,10 +224,14 @@ class Ui_MainWindow(object):
         self.materials_but.setText(QCoreApplication.translate("MainWindow", u"\u041c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b", None))
         self.bill_of_material_but.setText(QCoreApplication.translate("MainWindow", u"\u0421\u043f\u0435\u0446\u0438\u0444\u0438\u043a\u0430\u0446\u0438\u044f", None))
         self.pushButton.setText(QCoreApplication.translate("MainWindow", u"\u0412\u044b\u0445\u043e\u0434", None))
-        self.label.setText(QCoreApplication.translate("MainWindow", u"orders", None))
+        self.orders_get_all.setText(QCoreApplication.translate("MainWindow", u"get all", None))
+        self.orders_add_new.setText(QCoreApplication.translate("MainWindow", u"add new", None))
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"product_batchers", None))
         self.label_6.setText(QCoreApplication.translate("MainWindow", u"customers", None))
-        self.label_3.setText(QCoreApplication.translate("MainWindow", u"maeterials", None))
+        self.material_add.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c", None))
+        self.material_delete.setText(QCoreApplication.translate("MainWindow", u"\u0423\u0434\u0430\u043b\u0438\u0442\u044c", None))
+        self.material_change.setText(QCoreApplication.translate("MainWindow", u"\u0418\u0437\u043c\u0435\u043d\u0438\u0442\u044c", None))
+        self.material_load.setText(QCoreApplication.translate("MainWindow", u"\u0417\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c", None))
         self.label_7.setText(QCoreApplication.translate("MainWindow", u"bill_of_material", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"employee", None))
         self.label_5.setText(QCoreApplication.translate("MainWindow", u"products", None))
