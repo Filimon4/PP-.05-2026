@@ -44,7 +44,7 @@ class OrdersListModel(QAbstractListModel):
         product = self.orders[index.row()]
 
         if role == Qt.DisplayRole:
-            return f"{product['id']} | {product['customer_name']} | Покупатель: {"Да" if product['is_buyer'] else "Нет" } | Продавец: {"Да" if product['is_salesman'] else "Нет"} | Телефон менеджера: {product['employee_phone']} | Почта менеджера {product['employee_email']}"
+            return f"{product['id']} | {product['customer_name']} | Покупатель: {'Да' if product['is_buyer'] else 'Нет' } | Продавец: {'Да' if product['is_salesman'] else 'Нет'} | Телефон менеджера: {product['employee_phone']} | Почта менеджера {product['employee_email']}"
         
         if role == Qt.UserRole:
             return product
