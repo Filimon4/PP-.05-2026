@@ -366,6 +366,9 @@ class OrdersChangeDialog(OrdersAddDialog):
     # endregion
 
     def setDefault(self):
+        print(self.order)
+        self.ui.order_date.setDate(self.order['date'])
+
         index = self.ui.order_customer_combo.findText(self.order['customer_name'])
         if index >= 0:
             self.ui.order_customer_combo.setCurrentIndex(index)
@@ -461,7 +464,6 @@ class MaterialChangeDialog(MaterialAddDialog):
     def __init__(self, parent=None, material=object):
         super().__init__(parent)
         self.material = material
-        self.setDefault()
 
     def setDefault(self):
         self.ui.materialName.setText(self.material['name'])
@@ -560,7 +562,6 @@ class EmployeeChangeDialog(EmployeeAddDialog):
     def __init__(self, parent=None, employee=None):
         super().__init__(parent)
         self.employee = employee
-        self.setDefault()
     
     def setDefault(self):
         self.ui.first_name.setText(self.employee['first_name'])
@@ -1540,6 +1541,8 @@ class MainWindow(QMainWindow):
         dialog = MaterialChangeDialog(None, item)
         units = self.getUnitOfMeasure()
         dialog.setUnits(list(map(lambda u: u['code'], list(units))))
+        dialog.setDefault()
+        
         if dialog.exec() == QDialog.DialogCode.Accepted:
             data = dialog.getData()
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
@@ -1693,6 +1696,7 @@ class MainWindow(QMainWindow):
         dialog = EmployeeChangeDialog(None, item)
         units = self.getEmployeePositions()
         dialog.setPositions(list(map(lambda u: u['title'], list(units))))
+        dialog.setDefault()
         if dialog.exec() == QDialog.DialogCode.Accepted:
             data = dialog.getData()
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
