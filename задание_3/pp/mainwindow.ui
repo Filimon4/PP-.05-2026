@@ -141,7 +141,7 @@
           </sizepolicy>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="orders">
           <property name="sizePolicy">
@@ -150,7 +150,7 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
-          <widget class="QWidget" name="">
+          <widget class="QWidget" name="layoutWidget">
            <property name="geometry">
             <rect>
              <x>0</x>
@@ -231,7 +231,7 @@
           </widget>
          </widget>
          <widget class="QWidget" name="product_batches">
-          <widget class="QWidget" name="">
+          <widget class="QWidget" name="layoutWidget">
            <property name="geometry">
             <rect>
              <x>0</x>
@@ -291,6 +291,20 @@
                 </property>
                </widget>
               </item>
+              <item>
+               <widget class="QComboBox" name="product_batches_load_filter_combo">
+                <item>
+                 <property name="text">
+                  <string>Все</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Остатки</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
              </layout>
             </item>
             <item>
@@ -300,7 +314,7 @@
           </widget>
          </widget>
          <widget class="QWidget" name="customers">
-          <widget class="QWidget" name="">
+          <widget class="QWidget" name="layoutWidget">
            <property name="geometry">
             <rect>
              <x>0</x>
@@ -446,7 +460,7 @@
           </property>
          </widget>
          <widget class="QWidget" name="employee">
-          <widget class="QWidget" name="">
+          <widget class="QWidget" name="layoutWidget">
            <property name="geometry">
             <rect>
              <x>0</x>
@@ -515,7 +529,7 @@
           </widget>
          </widget>
          <widget class="QWidget" name="products">
-          <widget class="QWidget" name="">
+          <widget class="QWidget" name="layoutWidget">
            <property name="geometry">
             <rect>
              <x>0</x>

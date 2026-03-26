@@ -86,9 +86,9 @@ CREATE TABLE order_items (
 CREATE TABLE product_batches (
     id INTEGER PRIMARY KEY,
     product_id INTEGER NOT NULL,
-    order_id INTEGER NOT NULL,
+    order_id INTEGER,
     date TIMESTAMP,
-    quantity INTEGER NOT NULL CHECK (quantity >= 0),
+    quantity INTEGER NOT NULL,
     FOREIGN KEY (product_id) REFERENCES products(id),
     FOREIGN KEY (order_id) REFERENCES orders(id)
 );

@@ -143,8 +143,10 @@ class OrdersChangeDialog(OrdersAddDialog):
             close_button = QPushButton("Отменить")
             self.ui.order_actions.addWidget(close_button)
             close_button.clicked.connect(self.declineOrder)
+            
             closed_ids = []
 
+            print(self.orderItems)
             for item in self.orderItems:
                 total_batch_quantity = sum(
                     batch['quantity'] for batch in self.batches 
@@ -154,8 +156,6 @@ class OrdersChangeDialog(OrdersAddDialog):
                 if total_batch_quantity >= item['quantity']:
                     closed_ids.append(item['id'])
 
-            print(closed_ids)
-            print(self.orderItems)
             if len(closed_ids) == len(self.orderItems) and len(self.orderItems) > 0:
                 close_button = QPushButton("Закрыть")
                 self.ui.order_actions.addWidget(close_button)
@@ -178,6 +178,34 @@ class OrdersChangeDialog(OrdersAddDialog):
     def closeOrder(self):
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             try:
+                cur.execute("BEGIN")
+                
+                for item in self.orderItems:
+                    batch = list(filter(lambda x: x['product_id'] == item['product_id'], list(self.batches)))[0]
+                    remaining_quantity = batch['quantity'] - item['quantity']
+                    print(remaining_quantity)
+
+                    if remaining_quantity < 0:
+                        raise Exception("Не достаточно товара для закрытия заказа")
+                    
+                    if remaining_quantity > 0:
+                        cur.execute("""
+                            INSERT INTO product_batches (product_id, order_id, date, quantity)
+                            VALUES (%(product_id)s, NULL, CURRENT_TIMESTAMP, %(remain)s)
+                        """, {
+                            'product_id': item['product_id'],
+                            'remain': remaining_quantity
+                        })
+
+                    cur.execute("""
+                        INSERT INTO product_batches (product_id, order_id, date, quantity)
+                        VALUES (%(product_id)s, %(order_id)s, CURRENT_TIMESTAMP, %(total)s)
+                    """, {
+                        'order_id': self.order['id'],
+                        'product_id': item['product_id'],
+                        'total': item['quantity'] * (-1)
+                    })
+
                 cur.execute("""
                     UPDATE orders 
                     SET status_id = (SELECT id FROM order_statuses WHERE code = 'closed')
@@ -1996,7 +2024,9 @@ class MainWindow(QMainWindow):
 
     def productBatchesLoad(self):
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute("""
+            currentFilter = self.ui.product_batches_load_filter_combo.currentText()
+            
+            query = """
                 SELECT 
                     pb.id,
                     pb.product_id,
@@ -2010,8 +2040,14 @@ class MainWindow(QMainWindow):
                 LEFT JOIN products p ON p.id = pb.product_id
                 LEFT JOIN orders o ON o.id = pb.order_id
                 LEFT JOIN customers c ON c.id = o.customer_id
-                ORDER BY pb.id ASC
-            """)
+            """
+            
+            if currentFilter == "Остатки":
+                query += " WHERE pb.order_id IS NULL"
+            
+            query += " ORDER BY pb.id ASC"
+            
+            cur.execute(query)
             batches = cur.fetchall()
 
         model = ProductBatchListModel(batches)
