@@ -1,7 +1,7 @@
 import sys
 from PySide6.QtWidgets import QApplication, QMainWindow, QDialog, QMessageBox, QPushButton, QStyledItemDelegate
-from PySide6.QtCore import Qt, QAbstractListModel, QModelIndex, QDateTime, QDate
-from PySide6.QtGui import QBrush, QColor
+from PySide6.QtCore import Qt, QAbstractListModel, QModelIndex, QDateTime, QDate, QSize 
+from PySide6.QtGui import QIcon, QPixmap
 from ui_mainwindow import Ui_MainWindow
 from ui_material_add import Ui_material_add
 from ui_add_employee import Ui_add_employee
@@ -11,8 +11,12 @@ from ui_add_product import Ui_add_product
 from ui_bill_of_material import Ui_bill_of_material
 from ui_order_item import Ui_order_item
 from ui_order import Ui_order
+from ui_auth import Ui_auth
+from ui_captha import Ui_captcha
 import psycopg2
 from psycopg2.extras import RealDictCursor
+
+import resources_rc
 
 # TODO: Добавить функцию разархивации, deleted = false
 # TODO: Добавить разные виды просмотра фильтры для просмотра, combo box на загрузку
@@ -514,7 +518,10 @@ class EmployeeAddDialog(QDialog):
             'email': self.ui.email.text().strip(),            # string, not null, should contain @ and domain
             'phone': self.ui.phone.text().strip(),            # string
             'address': self.ui.address.text().strip(),        # string
-            'position_title': self.ui.position_combo.currentText() # string (from combo box)
+            'position_title': self.ui.position_combo.currentText(), # string (from combo box)
+            'login': self.ui.login.text().strip(),
+            'password': self.ui.password.text().strip(),
+            'blocked': self.ui.blocked_combo.currentText() == 'Да' if True else False
         }
     
     def validate(self):
@@ -570,7 +577,13 @@ class EmployeeChangeDialog(EmployeeAddDialog):
         self.ui.email.setText(self.employee['email'])
         self.ui.phone.setText(self.employee['phone'] if self.employee['phone'] else '')
         self.ui.address.setText(self.employee['address'] if self.employee['address'] else '')
+        self.ui.login.setText(self.employee['login'])
+        self.ui.password.setText(self.employee['password'])
         
+        index = self.ui.blocked_combo.findText('Да' if self.employee['blocked'] == True else 'Нет')
+        if index >= 0:
+            self.ui.blocked_combo.setCurrentIndex(index)
+
         index = self.ui.position_combo.findText(self.employee['position_title'])
         if index >= 0:
             self.ui.position_combo.setCurrentIndex(index)
@@ -1207,6 +1220,133 @@ class OrderItemsChangeDialog(OrderItemsAddDialog):
 
 # endregion
 
+# region auth
+
+class CaptchaDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.ui = Ui_captcha()
+        self.ui.setupUi(self)
+        self.setWindowFlag(Qt.WindowType.Dialog)
+
+        self.one_image = QPixmap("icons/1.png")
+        self.one_image = self.one_image.scaled(QSize(150,150))
+        self.two_image = QPixmap("icons/2.png")
+        self.two_image = self.two_image.scaled(QSize(150,150))
+        self.three_image = QPixmap("icons/4.png")
+        self.three_image = self.three_image.scaled(QSize(150,150))
+        self.fourth_image = QPixmap("icons/3.png")
+        self.fourth_image = self.fourth_image.scaled(QSize(150,150))
+
+        if self.one_image.isNull():
+            print("Failed to load image: :/icons/1.png")
+
+        self.ui.next_button.clicked.connect(self.nextClicked)
+        self.set_i = 1
+        self.setImage()
+        
+        self.curr_try = 1
+
+    def nextClicked(self):
+        self.nextSet()
+        self.setImage()
+
+    def setImage(self):
+        if self.set_i == 0:
+            self.ui.one.setPixmap(self.one_image)
+            self.ui.two.setPixmap(self.two_image)
+            self.ui.three.setPixmap(self.three_image)
+            self.ui.fourth.setPixmap(self.fourth_image)
+        elif self.set_i == 1:
+            self.ui.two.setPixmap(self.one_image)
+            self.ui.three.setPixmap(self.two_image)
+            self.ui.fourth.setPixmap(self.three_image)
+            self.ui.one.setPixmap(self.fourth_image)
+        elif self.set_i == 2:
+            self.ui.three.setPixmap(self.one_image)
+            self.ui.fourth.setPixmap(self.two_image)
+            self.ui.one.setPixmap(self.three_image)
+            self.ui.two.setPixmap(self.fourth_image)
+        elif self.set_i == 3:
+            self.ui.fourth.setPixmap(self.one_image)
+            self.ui.one.setPixmap(self.two_image)
+            self.ui.two.setPixmap(self.three_image)
+            self.ui.three.setPixmap(self.fourth_image)
+
+    def nextSet(self):
+        self.set_i = (self.set_i + 1) % 4
+
+    def check(self):
+        if self.curr_try > 3:
+            return False
+        if self.set_i == 0:
+            return True
+        return False
+    
+    def accept(self):
+        if self.curr_try > 3:
+            super().accept()
+
+        if self.set_i != 0:
+            self.curr_try += 1
+            return
+
+        super().accept()
+
+class AuthDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.ui = Ui_auth()
+        self.ui.setupUi(self)
+        self.setWindowFlags(Qt.WindowType.Dialog)
+
+        self.ui.login_button.clicked.connect(self.loginClicked)
+
+    def loginClicked(self):
+        login = self.ui.login_input.text()
+        password = self.ui.password_input.text()
+
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                select
+                    e.id,
+                    e.login,
+                    e.password,
+                    e.blocked,
+                    er.code as role_code
+                from employees e
+                left join employee_roles er on er.id = e.role_id
+                where e.login = %(login)s and e.password = %(password)s
+            """, {'login': login, 'password': password})
+            self.user = cur.fetchone()
+
+        if self.user is None:
+            QMessageBox.warning(self, "Ошибка", "Вы ввели неверный логин или пароль. Пожалуйста проверьте ещё раз введенные данные")
+            return
+        
+        if self.user['blocked'] == True:
+            QMessageBox.warning(self, "Ошибка", "Вы заблокированы. Обратитесь к администратору")
+            return
+        
+        capthca = CaptchaDialog()
+        if capthca.exec() == QDialog.DialogCode.Accepted:
+            isRight = capthca.check()
+            if not isRight:
+                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    cur.execute("""
+                        update employees
+                        set blocked = true
+                        where id = %(id)s
+                    """, {'id': self.user['id']})
+                    conn.commit()
+                QMessageBox.warning(self, "Ошибка", "Вы заблокированы. Обратитесь к администратору")
+                return
+        else:
+            QMessageBox.warning(self, "Ошибка", "Повторите ввод каптчи")
+            return
+
+        super().accept()
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -1259,6 +1399,18 @@ class MainWindow(QMainWindow):
         self.ui.product_load.clicked.connect    (self.productLoad)
         self.ui.product_delete.clicked.connect  (self.productDelete)
 
+        self.ui.central_widget.setEnabled(False)
+        dialog = AuthDialog()
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            self.role = dialog.user['role_code']
+            self.ui.central_widget.setEnabled(True)
+        else:
+            sys.exit()
+
+        if self.role != 'admin':
+            self.ui.employees_but.setEnabled(False)
+            self.ui.employees_but.deleteLater()
+
     # region menu
     
     def customersClicked(self):
@@ -1302,7 +1454,6 @@ class MainWindow(QMainWindow):
                 left join order_statuses os on os.id = o.status_id
                 left join customers c on o.customer_id = c.id
                 left join employees e on o.manager_id = e.id
-                
             """
             
             params = {}
@@ -1639,6 +1790,9 @@ class MainWindow(QMainWindow):
                     e.family_name,
                     e.last_name,
                     e.phone,
+                    e.login,
+                    e.password,
+                    e.blocked,
                     ep.title as position_title
                 from employees e
                 left join employee_positions ep on ep.id = e.position_id
@@ -1717,7 +1871,10 @@ class MainWindow(QMainWindow):
                         email = %(email)s,
                         phone = %(phone)s,
                         address = %(address)s,
-                        position_id = %(position_id)s
+                        position_id = %(position_id)s,
+                        login = %(login)s,
+                        password = %(password)s,
+                        blocked = %(blocked)s
                     WHERE id = %(id)s
                     RETURNING id
                 """, {
@@ -1728,7 +1885,10 @@ class MainWindow(QMainWindow):
                     'email': data['email'],
                     'phone': data['phone'],
                     'address': data['address'],
-                    'position_id': position['id']
+                    'position_id': position['id'],
+                    'login': data['login'],
+                    'password': data['password'],
+                    'blocked': data['blocked']
                 })
                 cur.fetchone()
                 conn.commit()

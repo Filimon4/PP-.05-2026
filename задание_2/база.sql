@@ -16,6 +16,11 @@ CREATE TABLE employee_positions (
     code VARCHAR(255) NOT NULL
 );
 
+CREATE TABLE employee_roles (
+    id INTEGER PRIMARY KEY,
+    code VARCHAR(255) NOT null unique
+);
+
 CREATE TABLE employees (
     id INTEGER PRIMARY KEY,
     first_name VARCHAR(255) NOT NULL,
@@ -121,7 +126,11 @@ ALTER TABLE materials ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY;
 ALTER TABLE customers ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY;
 ALTER TABLE product_batches ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY;
 ALTER TABLE order_statuses ADD COLUMN title varchar(255);
-
+alter table employees add column login varchar(255) unique not null;
+alter table employees add column password varchar(255);
+ALTER TABLE employees ADD COLUMN role_id INTEGER REFERENCES employee_roles(id);
+ALTER TABLE employee_roles ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY;
+alter table employees add column blocked boolean default false not null;
 
 alter table products drop column unit_of_measure;
 ALTER TABLE products ADD COLUMN unit_of_measure_id INTEGER REFERENCES units_of_measures(id);
@@ -174,24 +183,65 @@ INSERT INTO employee_positions (title, code) VALUES
 ('Оператор колл-центра', 'CALL_OPERATOR'),
 ('Водитель-экспедитор', 'DRIVER');
 
-INSERT INTO employees (first_name, last_name, family_name, email, phone, address, position_id) VALUES
-('Иван', 'Иванов', 'Иванович', 'ivanov@company.ru', '+7(901)123-45-67', 'г. Москва, ул. Ленина, д. 10, кв. 5', 1),
-('Петр', 'Петров', 'Петрович', 'petrov@company.ru', '+7(902)234-56-78', 'г. Москва, ул. Гагарина, д. 25, кв. 12', 2),
-('Сергей', 'Сидоров', 'Александрович', 'sidorov@company.ru', '+7(903)345-67-89', 'г. Москва, ул. Пушкина, д. 7, кв. 3', 3),
-('Анна', 'Смирнова', 'Викторовна', 'smirnova@company.ru', '+7(904)456-78-90', 'г. Москва, ул. Тверская, д. 15, кв. 8', 4),
-('Елена', 'Козлова', 'Дмитриевна', 'kozlova@company.ru', '+7(905)567-89-01', 'г. Москва, ул. Арбат, д. 30, кв. 45', 5),
-('Дмитрий', 'Морозов', 'Сергеевич', 'morozov@company.ru', '+7(906)678-90-12', 'г. Москва, ул. Новый Арбат, д. 12, кв. 67', 6),
-('Ольга', 'Волкова', 'Андреевна', 'volkova@company.ru', '+7(907)789-01-23', 'г. Москва, ул. Красная Пресня, д. 8, кв. 23', 7),
-('Алексей', 'Соколов', 'Игоревич', 'sokolov@company.ru', '+7(908)890-12-34', 'г. Москва, ул. Кутузовский пр., д. 45, кв. 89', 8),
-('Татьяна', 'Михайлова', 'Алексеевна', 'mihailova@company.ru', '+7(909)901-23-45', 'г. Москва, ул. Профсоюзная, д. 56, кв. 34', 9),
-('Николай', 'Федоров', 'Владимирович', 'fedorov@company.ru', '+7(910)012-34-56', 'г. Москва, ул. Ленинградский пр., д. 78, кв. 56', 10),
-('Мария', 'Андреева', 'Сергеевна', 'andreeva@company.ru', '+7(911)123-45-67', 'г. Москва, ул. Мичуринский пр., д. 90, кв. 12', 6),
-('Андрей', 'Николаев', 'Павлович', 'nikolaev@company.ru', '+7(912)234-56-78', 'г. Москва, ул. Вернадского, д. 34, кв. 78', 6),
-('Екатерина', 'Морозова', 'Денисовна', 'morozova@company.ru', '+7(913)345-67-89', 'г. Москва, ул. Лобачевского, д. 23, кв. 45', 11),
-('Владимир', 'Зайцев', 'Викторович', 'zaitsev@company.ru', '+7(914)456-78-90', 'г. Москва, ул. Удальцова, д. 67, кв. 23', 12),
-('Наталья', 'Павлова', 'Ильинична', 'pavlova@company.ru', '+7(915)567-89-01', 'г. Москва, ул. Мосфильмовская, д. 45, кв. 67', 13),
-('Михаил', 'Григорьев', 'Анатольевич', 'grigoriev@company.ru', '+7(916)678-90-12', 'г. Москва, ул. Строителей, д. 89, кв. 34', 14),
-('Юлия', 'Тарасова', 'Максимовна', 'tarasova@company.ru', '+7(917)789-01-23', 'г. Москва, ул. Вавилова, д. 12, кв. 56', 15);
+insert into employee_roles(code) values
+('user'),
+('admin');
+
+INSERT INTO employees (first_name, last_name, family_name, email, phone, address, position_id, login, role_id) VALUES
+('Иван', 'Иванов', 'Иванович', 'ivanov@company.ru', '+7(901)123-45-67', 'г. Москва, ул. Ленина, д. 10, кв. 5', 1, 'ivanov', 
+    (select id from employee_roles er where er.code = 'user')
+),
+('Петр', 'Петров', 'Петрович', 'petrov@company.ru', '+7(902)234-56-78', 'г. Москва, ул. Гагарина, д. 25, кв. 12', 2, 'petrov',
+    (select id from employee_roles er where er.code = 'user')
+),
+('Сергей', 'Сидоров', 'Александрович', 'sidorov@company.ru', '+7(903)345-67-89', 'г. Москва, ул. Пушкина, д. 7, кв. 3', 3, 'sidorov',
+    (select id from employee_roles er where er.code = 'user')
+),
+('Анна', 'Смирнова', 'Викторовна', 'smirnova@company.ru', '+7(904)456-78-90', 'г. Москва, ул. Тверская, д. 15, кв. 8', 4, 'smirnova',
+    (select id from employee_roles er where er.code = 'user')
+),
+('Елена', 'Козлова', 'Дмитриевна', 'kozlova@company.ru', '+7(905)567-89-01', 'г. Москва, ул. Арбат, д. 30, кв. 45', 5, 'kozlova',
+    (select id from employee_roles er where er.code = 'user')
+),
+('Дмитрий', 'Морозов', 'Сергеевич', 'morozov@company.ru', '+7(906)678-90-12', 'г. Москва, ул. Новый Арбат, д. 12, кв. 67', 6, 'morozov',
+    (select id from employee_roles er where er.code = 'user')
+),
+('Ольга', 'Волкова', 'Андреевна', 'volkova@company.ru', '+7(907)789-01-23', 'г. Москва, ул. Красная Пресня, д. 8, кв. 23', 7, 'volkova',
+    (select id from employee_roles er where er.code = 'user')
+),
+('Алексей', 'Соколов', 'Игоревич', 'sokolov@company.ru', '+7(908)890-12-34', 'г. Москва, ул. Кутузовский пр., д. 45, кв. 89', 8, 'sokolov',
+    (select id from employee_roles er where er.code = 'user')
+),
+('Татьяна', 'Михайлова', 'Алексеевна', 'mihailova@company.ru', '+7(909)901-23-45', 'г. Москва, ул. Профсоюзная, д. 56, кв. 34', 9, 'mihailova',
+    (select id from employee_roles er where er.code = 'user')
+),
+('Николай', 'Федоров', 'Владимирович', 'fedorov@company.ru', '+7(910)012-34-56', 'г. Москва, ул. Ленинградский пр., д. 78, кв. 56', 10, 'fedorov',
+    (select id from employee_roles er where er.code = 'user')
+),
+('Мария', 'Андреева', 'Сергеевна', 'andreeva@company.ru', '+7(911)123-45-67', 'г. Москва, ул. Мичуринский пр., д. 90, кв. 12', 6, 'andreeva',
+    (select id from employee_roles er where er.code = 'user')
+),
+('Андрей', 'Николаев', 'Павлович', 'nikolaev@company.ru', '+7(912)234-56-78', 'г. Москва, ул. Вернадского, д. 34, кв. 78', 6, 'nikolaev',
+    (select id from employee_roles er where er.code = 'user')
+),
+('Екатерина', 'Морозова', 'Денисовна', 'morozova@company.ru', '+7(913)345-67-89', 'г. Москва, ул. Лобачевского, д. 23, кв. 45', 11, 'morozova',
+    (select id from employee_roles er where er.code = 'user')
+),
+('Владимир', 'Зайцев', 'Викторович', 'zaitsev@company.ru', '+7(914)456-78-90', 'г. Москва, ул. Удальцова, д. 67, кв. 23', 12, 'zaitsev',
+    (select id from employee_roles er where er.code = 'user')
+),
+('Наталья', 'Павлова', 'Ильинична', 'pavlova@company.ru', '+7(915)567-89-01', 'г. Москва, ул. Мосфильмовская, д. 45, кв. 67', 13, 'pavlova',
+    (select id from employee_roles er where er.code = 'user')
+),
+('Михаил', 'Григорьев', 'Анатольевич', 'grigoriev@company.ru', '+7(916)678-90-12', 'г. Москва, ул. Строителей, д. 89, кв. 34', 14, 'grigoriev',
+    (select id from employee_roles er where er.code = 'user')
+),
+('Юлия', 'Тарасова', 'Максимовна', 'tarasova@company.ru', '+7(917)789-01-23', 'г. Москва, ул. Вавилова, д. 12, кв. 56', 15, 'tarasova',
+    (select id from employee_roles er where er.code = 'user')
+),
+('Админ', 'Админ', 'Админ', 'admin@company.ru', '+7(777)777-77-7', 'г. Москва, ул. Вавилова, д. 12, кв. 56', 1, 'admin',
+    (select id from employee_roles er where er.code = 'admin')
+);
 
 insert into units_of_measures (code) values 
 ('шт');
